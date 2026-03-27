@@ -2,24 +2,63 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  --glow-red: 0 0 0 1px rgba(139,0,0,0.9), 0 0 18px rgba(139,0,0,0.4);
+  --border-blood: rgba(139, 0, 0, 0.35);
+}
+
 @layer base {
   html, body {
-    @apply bg-gray-900 text-gray-100;
+    background-color: #0a0a0a;
+    color: #e8e0d0;
+    font-family: Inter, ui-sans-serif, system-ui, sans-serif;
     -webkit-tap-highlight-color: transparent;
     overscroll-behavior: none;
   }
+
+  /* Sharp corners everywhere — death metal aesthetic */
+  *, *::before, *::after {
+    border-radius: 0 !important;
+  }
+
+  /* Red focus glow on all interactive elements */
+  input:focus,
+  textarea:focus,
+  select:focus {
+    outline: none !important;
+    box-shadow: var(--glow-red) !important;
+    border-color: #8b0000 !important;
+  }
+
+  /* Style the date picker icon blood red */
+  input[type='date']::-webkit-calendar-picker-indicator {
+    filter: invert(0.6) sepia(1) saturate(6) hue-rotate(310deg) brightness(0.7);
+    cursor: pointer;
+  }
+
   input[type='number']::-webkit-inner-spin-button,
   input[type='number']::-webkit-outer-spin-button {
     -webkit-appearance: none;
   }
+
+  /* Scrollbar styling */
+  ::-webkit-scrollbar { width: 4px; }
+  ::-webkit-scrollbar-track { background: #0a0a0a; }
+  ::-webkit-scrollbar-thumb { background: #8b0000; }
 }
 
 @layer utilities {
-  /* safe area padding for devices with home bar */
   .pb-safe {
     padding-bottom: max(1rem, env(safe-area-inset-bottom));
   }
   .pt-safe {
     padding-top: max(0px, env(safe-area-inset-top));
+  }
+  .glow-red {
+    box-shadow: var(--glow-red);
+  }
+  /* Thin blood-red divider */
+  .divide-blood > * + * {
+    border-top: 1px solid var(--border-blood);
   }
 }

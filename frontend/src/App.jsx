@@ -8,8 +8,7 @@ import Progress from './pages/Progress.jsx';
 export default function App() {
   return (
     <BrowserRouter>
-      <div className="flex flex-col min-h-screen bg-gray-900">
-        {/* Page content — bottom nav eats ~4rem so pad it */}
+      <div className="flex flex-col min-h-screen bg-[#0a0a0a]">
         <main className="flex-1 overflow-y-auto pb-20 pt-safe">
           <Routes>
             <Route path="/"         element={<Dashboard />} />

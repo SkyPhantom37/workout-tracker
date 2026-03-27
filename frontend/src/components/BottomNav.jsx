@@ -16,8 +16,7 @@ const tabs = [
     label: 'Log',
     icon: (active) => (
       <svg viewBox="0 0 24 24" fill={active ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="2" className="w-6 h-6">
-        <path strokeLinecap="round" strokeLinejoin="round"
-          d="M12 4v16m8-8H4" />
+        <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
       </svg>
     ),
   },
@@ -45,7 +44,8 @@ const tabs = [
 
 export default function BottomNav() {
   return (
-    <nav className="fixed bottom-0 left-0 right-0 bg-gray-800 border-t border-gray-700 pb-safe z-50">
+    <nav className="fixed bottom-0 left-0 right-0 bg-[#111111] border-t z-50 pb-safe"
+         style={{ borderColor: 'rgba(139,0,0,0.35)' }}>
       <div className="flex">
         {tabs.map(({ to, label, icon }) => (
           <NavLink
@@ -54,14 +54,18 @@ export default function BottomNav() {
             end={to === '/'}
             className={({ isActive }) =>
               `flex-1 flex flex-col items-center justify-center py-2 gap-0.5 text-xs font-medium transition-colors ${
-                isActive ? 'text-violet-400' : 'text-gray-500'
+                isActive
+                  ? 'text-blood-bright'
+                  : 'text-ash hover:text-bone'
               }`
             }
           >
             {({ isActive }) => (
               <>
                 {icon(isActive)}
-                <span>{label}</span>
+                <span style={isActive ? { textShadow: '0 0 8px rgba(204,0,0,0.6)' } : {}}>
+                  {label}
+                </span>
               </>
             )}
           </NavLink>

@@ -12,8 +12,8 @@ export default defineConfig({
         name: 'Workout Tracker',
         short_name: 'Workouts',
         description: 'Log workouts, track progress, and hit PRs.',
-        theme_color: '#7C3AED',
-        background_color: '#111827',
+        theme_color: '#0a0a0a',
+        background_color: '#0a0a0a',
         display: 'standalone',
         orientation: 'portrait',
         scope: '/',
@@ -27,7 +27,6 @@ export default defineConfig({
         globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2}'],
         runtimeCaching: [
           {
-            // Cache API calls — use NetworkFirst so fresh data wins, but works offline
             urlPattern: ({ url }) => url.pathname.startsWith('/api/'),
             handler: 'NetworkFirst',
             options: {

@@ -12,6 +12,9 @@ function fmtVol(vol) {
   return vol >= 1000 ? `${(vol / 1000).toFixed(1)}k` : `${Math.round(vol)}`;
 }
 
+const cardBorder = { borderColor: 'rgba(139,0,0,0.30)' };
+const dividerStyle = { borderColor: 'rgba(139,0,0,0.25)' };
+
 export default function WorkoutCard({ workout, onDelete, defaultOpen = false }) {
   const [open, setOpen] = useState(defaultOpen);
   const navigate = useNavigate();
@@ -23,40 +26,44 @@ export default function WorkoutCard({ workout, onDelete, defaultOpen = false }) 
   };
 
   return (
-    <div className="bg-gray-800 rounded-2xl overflow-hidden border border-gray-700">
+    <div className="bg-surface overflow-hidden border" style={cardBorder}>
       {/* Header */}
       <button
         onClick={() => setOpen(o => !o)}
-        className="w-full text-left p-4 flex items-start justify-between gap-3"
+        className="w-full text-left p-4 flex items-start justify-between gap-3 active:bg-surface-2"
       >
         <div className="min-w-0">
-          <p className="text-xs text-violet-400 font-medium mb-0.5">{fmtDate(workout.date)}</p>
-          <h3 className="font-bold text-white text-base leading-tight truncate">{workout.name}</h3>
-          <p className="text-xs text-gray-400 mt-1">
+          <p className="text-xs text-blood-bright font-medium font-brutal mb-0.5 tracking-wider">
+            {fmtDate(workout.date)}
+          </p>
+          <h3 className="font-display text-bone text-lg leading-tight truncate">
+            {workout.name}
+          </h3>
+          <p className="text-xs text-ash mt-1 font-brutal">
             {workout.exercise_count ?? 0} exercise{workout.exercise_count !== 1 ? 's' : ''}
             {' · '}
             {workout.total_sets ?? 0} sets
             {workout.total_volume > 0 && (
-              <> · <span className="text-gray-300">{fmtVol(workout.total_volume)} lbs total</span></>
+              <> · <span className="text-bone/70">{fmtVol(workout.total_volume)} lbs</span></>
             )}
           </p>
         </div>
-        <span className="text-gray-500 text-lg flex-shrink-0 mt-1">
+        <span className="text-blood/60 text-sm flex-shrink-0 mt-1 font-brutal">
           {open ? '▲' : '▼'}
         </span>
       </button>
 
       {/* Expanded details */}
       {open && (
-        <div className="px-4 pb-4 space-y-3 border-t border-gray-700 pt-3">
+        <div className="px-4 pb-4 space-y-3 border-t pt-3" style={dividerStyle}>
           {workout.exercises?.length > 0 ? (
             workout.exercises.map((ex) => (
               <div key={ex.id}>
-                <p className="text-sm font-semibold text-gray-200 mb-1">{ex.name}</p>
+                <p className="text-sm font-semibold text-bone mb-1 tracking-wide">{ex.name}</p>
                 <div className="space-y-0.5">
                   {ex.sets?.map((s) => (
-                    <div key={s.id} className="flex gap-4 text-sm text-gray-400">
-                      <span className="text-gray-600 w-8">#{s.set_number}</span>
+                    <div key={s.id} className="flex gap-4 text-sm text-ash font-brutal">
+                      <span className="text-blood/50 w-8">#{s.set_number}</span>
                       <span>{s.reps} reps</span>
                       <span>@ {s.weight} lbs</span>
                     </div>
@@ -65,11 +72,11 @@ export default function WorkoutCard({ workout, onDelete, defaultOpen = false }) 
               </div>
             ))
           ) : (
-            <p className="text-sm text-gray-500 italic">No exercises logged.</p>
+            <p className="text-sm text-ash italic">No exercises logged.</p>
           )}
 
           {workout.notes && (
-            <p className="text-sm text-gray-400 italic border-t border-gray-700 pt-2">
+            <p className="text-sm text-ash italic border-t pt-2" style={dividerStyle}>
               {workout.notes}
             </p>
           )}
@@ -78,13 +85,15 @@ export default function WorkoutCard({ workout, onDelete, defaultOpen = false }) 
           <div className="flex gap-2 pt-1">
             <button
               onClick={() => navigate(`/log/${workout.id}`)}
-              className="flex-1 py-2 rounded-xl bg-gray-700 text-sm font-medium text-gray-200 active:bg-gray-600"
+              className="flex-1 py-2 bg-surface-2 text-sm font-medium text-bone border active:bg-[#222222] transition-colors"
+              style={{ borderColor: 'rgba(139,0,0,0.35)' }}
             >
               Edit
             </button>
             <button
               onClick={handleDelete}
-              className="flex-1 py-2 rounded-xl bg-red-900/40 text-sm font-medium text-red-400 active:bg-red-900/60"
+              className="flex-1 py-2 text-sm font-medium text-blood-bright border border-blood/30 active:bg-blood/20 transition-colors"
+              style={{ background: 'rgba(139,0,0,0.12)' }}
             >
               Delete
             </button>

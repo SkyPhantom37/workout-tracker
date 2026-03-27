@@ -2,37 +2,42 @@ import { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { api } from '../api.js';
 
-// ── Small helpers ──────────────────────────────────────────────────────────────
+// ── Helpers ────────────────────────────────────────────────────────────────────
 
 function uid() {
   return crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).slice(2);
 }
-
 function todayISO() {
   return new Date().toISOString().split('T')[0];
 }
+function emptySet()      { return { _id: uid(), reps: '', weight: '' }; }
+function emptyExercise() { return { _id: uid(), name: '', sets: [emptySet()] }; }
 
-function emptySet() {
-  return { _id: uid(), reps: '', weight: '' };
-}
+const inputBase =
+  'w-full bg-surface-2 border border-blood/30 px-3 py-3 text-bone placeholder-ash ' +
+  'focus:outline-none focus:border-blood text-sm transition-colors';
 
-function emptyExercise() {
-  return { _id: uid(), name: '', sets: [emptySet()] };
-}
+const cardBorder   = { borderColor: 'rgba(139,0,0,0.30)' };
+const dividerStyle = { borderColor: 'rgba(139,0,0,0.20)' };
+const glowStyle    = { boxShadow: '0 0 0 1px rgba(139,0,0,0.9), 0 0 18px rgba(139,0,0,0.45)' };
 
 // ── Input components ───────────────────────────────────────────────────────────
 
 function TextInput({ label, value, onChange, placeholder, required }) {
   return (
     <div>
-      {label && <label className="block text-xs text-gray-400 mb-1">{label}</label>}
+      {label && (
+        <label className="block text-xs text-ash mb-1 uppercase tracking-widest font-brutal">
+          {label}
+        </label>
+      )}
       <input
         type="text"
         value={value}
         onChange={e => onChange(e.target.value)}
         placeholder={placeholder}
         required={required}
-        className="w-full bg-gray-700 border border-gray-600 rounded-xl px-3 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-violet-500 text-sm"
+        className={inputBase}
       />
     </div>
   );
@@ -47,7 +52,9 @@ function NumInput({ value, onChange, placeholder, min = '0' }) {
       onChange={e => onChange(e.target.value)}
       placeholder={placeholder}
       min={min}
-      className="bg-gray-700 border border-gray-600 rounded-lg px-2 py-2 text-white placeholder-gray-500 focus:outline-none focus:border-violet-500 text-sm w-full text-center"
+      className="bg-surface-2 border border-blood/30 px-2 py-2 text-bone placeholder-ash
+                 focus:outline-none focus:border-blood text-sm w-full text-center
+                 font-brutal transition-colors"
     />
   );
 }
@@ -59,15 +66,14 @@ export default function LogWorkout() {
   const navigate = useNavigate();
   const isEditing = Boolean(id);
 
-  const [name, setName] = useState('');
-  const [date, setDate] = useState(todayISO());
-  const [notes, setNotes] = useState('');
+  const [name,      setName]      = useState('');
+  const [date,      setDate]      = useState(todayISO());
+  const [notes,     setNotes]     = useState('');
   const [exercises, setExercises] = useState([emptyExercise()]);
-  const [loading, setLoading] = useState(isEditing);
-  const [saving, setSaving] = useState(false);
-  const [error, setError] = useState(null);
+  const [loading,   setLoading]   = useState(isEditing);
+  const [saving,    setSaving]    = useState(false);
+  const [error,     setError]     = useState(null);
 
-  // Load existing workout when editing
   useEffect(() => {
     if (!isEditing) return;
     api.getWorkout(id)
@@ -78,7 +84,7 @@ export default function LogWorkout() {
         setExercises(
           w.exercises.length > 0
             ? w.exercises.map(ex => ({
-                _id: uid(),
+                _id:  uid(),
                 name: ex.name,
                 sets: ex.sets.length > 0
                   ? ex.sets.map(s => ({ _id: uid(), reps: String(s.reps), weight: String(s.weight) }))
@@ -91,10 +97,9 @@ export default function LogWorkout() {
       .finally(() => setLoading(false));
   }, [id, isEditing]);
 
-  // ── Exercise / set mutations ─────────────────────────────────────────────────
+  // ── Mutations ──────────────────────────────────────────────────────────────
 
-  const addExercise = () =>
-    setExercises(prev => [...prev, emptyExercise()]);
+  const addExercise = () => setExercises(prev => [...prev, emptyExercise()]);
 
   const removeExercise = useCallback((exId) =>
     setExercises(prev => prev.filter(e => e._id !== exId)), []);
@@ -119,15 +124,13 @@ export default function LogWorkout() {
         : e
     )), []);
 
-  // ── Submit ───────────────────────────────────────────────────────────────────
+  // ── Submit ─────────────────────────────────────────────────────────────────
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!name.trim()) return;
-
     setSaving(true);
     setError(null);
-
     const payload = {
       name: name.trim(),
       date,
@@ -138,19 +141,12 @@ export default function LogWorkout() {
           name: ex.name.trim(),
           sets: ex.sets
             .filter(s => s.reps !== '' || s.weight !== '')
-            .map(s => ({
-              reps: Number(s.reps) || 0,
-              weight: Number(s.weight) || 0,
-            })),
+            .map(s => ({ reps: Number(s.reps) || 0, weight: Number(s.weight) || 0 })),
         })),
     };
-
     try {
-      if (isEditing) {
-        await api.updateWorkout(id, payload);
-      } else {
-        await api.createWorkout(payload);
-      }
+      if (isEditing) { await api.updateWorkout(id, payload); }
+      else           { await api.createWorkout(payload); }
       navigate('/history');
     } catch (err) {
       setError(err.message);
@@ -158,13 +154,13 @@ export default function LogWorkout() {
     }
   };
 
-  // ── Render ───────────────────────────────────────────────────────────────────
+  // ── Render ─────────────────────────────────────────────────────────────────
 
   if (loading) {
     return (
-      <div className="p-4 space-y-3 max-w-lg mx-auto">
+      <div className="p-4 space-y-[1px] bg-blood/10 max-w-lg mx-auto">
         {[0, 1, 2].map(i => (
-          <div key={i} className="bg-gray-800 rounded-2xl h-16 animate-pulse border border-gray-700" />
+          <div key={i} className="bg-surface h-16 animate-pulse" />
         ))}
       </div>
     );
@@ -174,43 +170,57 @@ export default function LogWorkout() {
     <form onSubmit={handleSubmit} className="px-4 pt-6 pb-4 space-y-5 max-w-lg mx-auto">
       {/* Header */}
       <div className="flex items-center gap-3">
-        <button type="button" onClick={() => navigate(-1)} className="text-gray-400 active:text-white p-1">
+        <button
+          type="button"
+          onClick={() => navigate(-1)}
+          className="text-ash active:text-blood-bright p-1 transition-colors"
+        >
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="w-5 h-5">
             <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
           </svg>
         </button>
-        <h1 className="text-xl font-bold text-white">
+        <h1 className="font-display text-2xl text-bone"
+            style={{ textShadow: '0 0 16px rgba(139,0,0,0.45)' }}>
           {isEditing ? 'Edit Workout' : 'Log Workout'}
         </h1>
       </div>
 
       {error && (
-        <div className="bg-red-900/30 border border-red-800 rounded-xl p-3 text-sm text-red-400">
+        <div className="border p-3 text-sm text-blood-bright"
+             style={{ background: 'rgba(139,0,0,0.10)', borderColor: '#8b0000' }}>
           {error}
         </div>
       )}
 
       {/* Workout meta */}
       <div className="space-y-3">
-        <TextInput label="Workout name" value={name} onChange={setName} placeholder="e.g. Push Day" required />
+        <TextInput
+          label="Workout name"
+          value={name}
+          onChange={setName}
+          placeholder="e.g. Push Day"
+          required
+        />
         <div>
-          <label className="block text-xs text-gray-400 mb-1">Date</label>
+          <label className="block text-xs text-ash mb-1 uppercase tracking-widest font-brutal">Date</label>
           <input
             type="date"
             value={date}
             onChange={e => setDate(e.target.value)}
             required
-            className="w-full bg-gray-700 border border-gray-600 rounded-xl px-3 py-3 text-white focus:outline-none focus:border-violet-500 text-sm"
+            className={inputBase}
           />
         </div>
         <div>
-          <label className="block text-xs text-gray-400 mb-1">Notes (optional)</label>
+          <label className="block text-xs text-ash mb-1 uppercase tracking-widest font-brutal">
+            Notes (optional)
+          </label>
           <textarea
             value={notes}
             onChange={e => setNotes(e.target.value)}
             rows={2}
             placeholder="How did it feel?"
-            className="w-full bg-gray-700 border border-gray-600 rounded-xl px-3 py-2.5 text-white placeholder-gray-500 focus:outline-none focus:border-violet-500 text-sm resize-none"
+            className={`${inputBase} resize-none`}
           />
         </div>
       </div>
@@ -218,21 +228,23 @@ export default function LogWorkout() {
       {/* Exercises */}
       <div className="space-y-4">
         {exercises.map((ex, exIdx) => (
-          <div key={ex._id} className="bg-gray-800 rounded-2xl p-4 border border-gray-700 space-y-3">
-            {/* Exercise header */}
+          <div key={ex._id} className="bg-surface border space-y-3 p-4" style={cardBorder}>
+            {/* Exercise name */}
             <div className="flex items-center gap-2">
               <input
                 type="text"
                 value={ex.name}
                 onChange={e => updateExerciseName(ex._id, e.target.value)}
                 placeholder={`Exercise ${exIdx + 1}`}
-                className="flex-1 bg-gray-700 border border-gray-600 rounded-xl px-3 py-2.5 text-white placeholder-gray-500 focus:outline-none focus:border-violet-500 text-sm font-semibold"
+                className="flex-1 bg-surface-2 border border-blood/30 px-3 py-2.5 text-bone
+                           placeholder-ash focus:outline-none focus:border-blood text-sm
+                           font-semibold tracking-wide transition-colors"
               />
               {exercises.length > 1 && (
                 <button
                   type="button"
                   onClick={() => removeExercise(ex._id)}
-                  className="text-red-500 active:text-red-400 p-1.5 rounded-lg"
+                  className="text-blood/60 active:text-blood-bright p-1.5 transition-colors"
                   aria-label="Remove exercise"
                 >
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-5 h-5">
@@ -242,18 +254,18 @@ export default function LogWorkout() {
               )}
             </div>
 
-            {/* Set column headers */}
-            <div className="grid grid-cols-[2rem_1fr_1fr_2rem] gap-1.5 items-center text-xs text-gray-500 px-0.5">
+            {/* Column headers */}
+            <div className="grid grid-cols-[2rem_1fr_1fr_2rem] gap-1.5 items-center text-xs text-ash/70 px-0.5 font-brutal uppercase tracking-wider">
               <span>Set</span>
               <span className="text-center">Reps</span>
-              <span className="text-center">Weight (lbs)</span>
+              <span className="text-center">lbs</span>
               <span />
             </div>
 
             {/* Sets */}
             {ex.sets.map((s, si) => (
               <div key={s._id} className="grid grid-cols-[2rem_1fr_1fr_2rem] gap-1.5 items-center">
-                <span className="text-xs text-gray-500 text-center">{si + 1}</span>
+                <span className="text-xs text-blood/60 text-center font-brutal">{si + 1}</span>
                 <NumInput
                   value={s.reps}
                   onChange={v => updateSet(ex._id, s._id, 'reps', v)}
@@ -268,7 +280,7 @@ export default function LogWorkout() {
                   <button
                     type="button"
                     onClick={() => removeSet(ex._id, s._id)}
-                    className="text-gray-600 active:text-red-400 flex items-center justify-center"
+                    className="text-ash/50 active:text-blood-bright flex items-center justify-center transition-colors"
                   >
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-4 h-4">
                       <path strokeLinecap="round" strokeLinejoin="round" d="M20 12H4" />
@@ -282,9 +294,11 @@ export default function LogWorkout() {
             <button
               type="button"
               onClick={() => addSet(ex._id)}
-              className="w-full py-2 rounded-xl border border-dashed border-gray-600 text-sm text-gray-400 active:bg-gray-700"
+              className="w-full py-2 border border-dashed border-blood/30 text-sm text-ash
+                         hover:text-bone hover:border-blood/60 active:bg-surface-2 transition-colors
+                         font-brutal tracking-widest uppercase"
             >
-              + Add set
+              + Add Set
             </button>
           </div>
         ))}
@@ -293,9 +307,11 @@ export default function LogWorkout() {
         <button
           type="button"
           onClick={addExercise}
-          className="w-full py-3 rounded-2xl border-2 border-dashed border-gray-700 text-gray-400 font-medium active:bg-gray-800"
+          className="w-full py-3 border-2 border-dashed border-blood/30 text-ash font-bold
+                     hover:text-bone hover:border-blood/60 active:bg-surface transition-colors
+                     uppercase tracking-widest text-sm"
         >
-          + Add exercise
+          + Add Exercise
         </button>
       </div>
 
@@ -303,9 +319,11 @@ export default function LogWorkout() {
       <button
         type="submit"
         disabled={saving || !name.trim()}
-        className="w-full py-4 rounded-2xl bg-violet-600 active:bg-violet-700 disabled:opacity-40 text-white font-bold text-base"
+        className="w-full py-4 bg-blood text-bone font-bold text-base uppercase tracking-widest
+                   active:bg-blood-bright disabled:opacity-30 transition-colors"
+        style={saving || !name.trim() ? {} : glowStyle}
       >
-        {saving ? 'Saving…' : isEditing ? 'Save Changes' : 'Save Workout'}
+        {saving ? 'Forging…' : isEditing ? 'Save Changes' : 'Save Workout'}
       </button>
     </form>
   );
